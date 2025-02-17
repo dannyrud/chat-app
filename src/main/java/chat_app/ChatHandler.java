@@ -2,6 +2,9 @@ package chat_app;
 
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import chat_app.utils.JwtUtil;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -17,15 +20,15 @@ public class ChatHandler extends TextWebSocketHandler {
         String authHeader = session.getHandshakeHeaders().getFirst("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            session.close(CloseStatus.NOT_ACCEPTABLE);
+            session.close(new CloseStatus(1008, "Missing or invalid Authorization header"));
             return;
         }
-
+        System.out.println(System.getenv("JWT_SECRET"));
         String token = authHeader.substring(7);
-        String username = validateToken(token);
+        String username = JwtUtil.validateToken(token);
 
         if (username == null) {
-            session.close(CloseStatus.NOT_ACCEPTABLE);
+            session.close(new CloseStatus(1008, "Invalid or expired token"));
             return;
         }
 
@@ -59,13 +62,5 @@ public class ChatHandler extends TextWebSocketHandler {
                 e.printStackTrace();
             }
         }
-    }
-
-
-    private String validateToken(String token) {
-        if ("valid-token".equals(token)) {
-            return "TestUser";
-        }
-        return null;
     }
 }

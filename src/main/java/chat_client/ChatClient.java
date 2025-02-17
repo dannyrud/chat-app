@@ -50,7 +50,6 @@ public class ChatClient extends WebSocketClient {
         System.out.print("🔒 Enter password: ");
         String password = scanner.nextLine();
 
-        // 🔥 Authenticate the user via REST API
         HttpRequest request = HttpRequest.newBuilder()
             .uri(new URI("http://localhost:8080/auth/login"))
             .header("Content-Type", "application/json")
@@ -74,8 +73,14 @@ public class ChatClient extends WebSocketClient {
             System.out.println("✅ Login successful!");
         }
 
-        JSONObject json = new JSONObject(responseBody);
-        String token = json.getString("token");
+        String token = null;
+        JSONObject json = new JSONObject(response.body());
+        if (json.has("token")) {
+            token = json.getString("token");
+        } else {
+            System.out.println("❌ No token received! Exiting...");
+            return;
+        }
         ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat"), token, username);
         client.connectBlocking();
 

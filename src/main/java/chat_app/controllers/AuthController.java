@@ -1,6 +1,7 @@
 package chat_app.controllers;
 
 import chat_app.services.UserService;
+import chat_app.utils.JwtUtil;
 import chat_app.models.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class AuthController {
 
         try {
             userService.registerUser(username, password);
-            String token = "valid-token"; // 🔹 Temporary Token
+            String token = JwtUtil.generateToken(username);
             return ResponseEntity.ok(Map.of("message", "User registered successfully!", "token", token));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", "Username already exists!"));
@@ -43,7 +44,7 @@ public class AuthController {
         }
 
         if (userService.authenticateUser(username, password)) {
-            String token = "valid-token"; // 🔹 Temporary Token
+            String token = JwtUtil.generateToken(username);
             return ResponseEntity.ok(Map.of("message", "Login successful!", "token", token));
         }
         return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password!"));
