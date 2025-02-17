@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo "Starting the Spring Boot WebSocket Server..."
+
+# Build the project
+mvn clean package
+
+# Run the server
+mvn spring-boot:run

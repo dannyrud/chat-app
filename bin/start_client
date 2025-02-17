@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo "Starting the WebSocket Chat Client..."
+
+# Ensure the project is built
+mvn clean install
+
+# Run the WebSocket client
+mvn exec:java -Dexec.mainClass="chat_client.ChatClient"
