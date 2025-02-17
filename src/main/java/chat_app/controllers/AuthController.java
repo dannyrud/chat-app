@@ -1,10 +1,9 @@
 package chat_app.controllers;
 
-import chat_app.models.User;
 import chat_app.services.UserService;
+import chat_app.models.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 
 @RestController
@@ -21,9 +20,14 @@ public class AuthController {
         String username = body.get("username");
         String password = body.get("password");
 
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            return ResponseEntity.status(400).body(Map.of("error", "Username and password are required!"));
+        }
+
         try {
             userService.registerUser(username, password);
-            return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
+            String token = "valid-token"; // 🔹 Temporary Token
+            return ResponseEntity.ok(Map.of("message", "User registered successfully!", "token", token));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", "Username already exists!"));
         }
@@ -34,8 +38,13 @@ public class AuthController {
         String username = body.get("username");
         String password = body.get("password");
 
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            return ResponseEntity.status(400).body(Map.of("error", "Username and password are required!"));
+        }
+
         if (userService.authenticateUser(username, password)) {
-            return ResponseEntity.ok(Map.of("message", "Login successful!"));
+            String token = "valid-token"; // 🔹 Temporary Token
+            return ResponseEntity.ok(Map.of("message", "Login successful!", "token", token));
         }
         return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password!"));
     }

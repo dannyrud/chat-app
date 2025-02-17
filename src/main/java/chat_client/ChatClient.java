@@ -9,19 +9,20 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import org.json.JSONObject;
 
 public class ChatClient extends WebSocketClient {
     private String username;
 
-    public ChatClient(URI serverURI, String username, String password) {
+    public ChatClient(URI serverURI, String token, String username) {
         super(serverURI);
         this.username = username;
+        addHeader("Authorization", "Bearer " + token);
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        System.out.println("✅ Connected to the chat server as " + username);
-        System.out.println("📩 Type your message and press ENTER to send.");
+        System.out.println("✅ Connected as " + username);
         System.out.println("🚪 Type `/exit` to leave the chat.");
     }
 
@@ -49,7 +50,7 @@ public class ChatClient extends WebSocketClient {
         System.out.print("🔒 Enter password: ");
         String password = scanner.nextLine();
 
-        // Authenticate the user via REST API
+        // 🔥 Authenticate the user via REST API
         HttpRequest request = HttpRequest.newBuilder()
             .uri(new URI("http://localhost:8080/auth/login"))
             .header("Content-Type", "application/json")
@@ -57,7 +58,7 @@ public class ChatClient extends WebSocketClient {
             .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
+        String responseBody;
         if (response.statusCode() == 401) {
             System.out.println("⚠️ User not found. Registering a new account...");
             request = HttpRequest.newBuilder()
@@ -66,15 +67,18 @@ public class ChatClient extends WebSocketClient {
                 .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"" + username + "\", \"password\":\"" + password + "\"}"))
                 .build();
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            responseBody = response.body();
             System.out.println("✅ User registered successfully!");
         } else {
+            responseBody = response.body();
             System.out.println("✅ Login successful!");
         }
-        
-        ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat"), username, password);
+
+        JSONObject json = new JSONObject(responseBody);
+        String token = json.getString("token");
+        ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat"), token, username);
         client.connectBlocking();
 
-        // Start message loop
         while (true) {
             String message = scanner.nextLine();
             if (message.equalsIgnoreCase("/exit")) {
