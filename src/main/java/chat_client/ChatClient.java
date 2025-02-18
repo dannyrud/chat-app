@@ -72,9 +72,8 @@ public class ChatClient extends WebSocketClient {
             responseBody = response.body();
             System.out.println("✅ Login successful!");
         }
-
         String token = null;
-        JSONObject json = new JSONObject(response.body());
+        JSONObject json = new JSONObject(responseBody); 
         if (json.has("token")) {
             token = json.getString("token");
         } else {

@@ -5,13 +5,15 @@ import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Base64;
 
 // Signs username with a secret key, provides message integrity not confidentiality
 public class JwtUtil {
-    private static final String SECRET_KEY = System.getenv("JWT_SECRET");
+    private static final Key generatedKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final String SECRET_KEY = Base64.getEncoder().encodeToString(generatedKey.getEncoded());
     private static final long EXPIRATION_TIME = 86400000; // 1 day
 
-    private static final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    private static final Key key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET_KEY));
 
     public static String generateToken(String username) {
         return Jwts.builder()
