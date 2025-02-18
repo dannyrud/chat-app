@@ -23,7 +23,6 @@ public class ChatHandler extends TextWebSocketHandler {
             session.close(new CloseStatus(1008, "Missing or invalid Authorization header"));
             return;
         }
-        System.out.println(System.getenv("JWT_SECRET"));
         String token = authHeader.substring(7);
         String username = JwtUtil.validateToken(token);
 
