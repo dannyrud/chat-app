@@ -3,17 +3,22 @@ package chat_app.controllers;
 import chat_app.services.UserService;
 import chat_app.utils.JwtUtil;
 import chat_app.models.User;
+import chat_app.repositories.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
@@ -43,10 +48,17 @@ public class AuthController {
             return ResponseEntity.status(400).body(Map.of("error", "Username and password are required!"));
         }
 
-        if (userService.authenticateUser(username, password)) {
-            String token = JwtUtil.generateToken(username);
-            return ResponseEntity.ok(Map.of("message", "Login successful!", "token", token));
+        Optional<User> user = userRepository.findByUsername(username);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User does not exist!"));
         }
-        return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password!"));
+
+        if (!userService.authenticateUser(username, password)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Incorrect password!"));
+        }
+
+        String token = JwtUtil.generateToken(username);
+        return ResponseEntity.ok(Map.of("message", "Login successful!", "token", token));
     }
 }

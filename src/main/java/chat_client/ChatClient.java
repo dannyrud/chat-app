@@ -1,8 +1,6 @@
 package chat_client;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Scanner;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -34,6 +32,7 @@ public class ChatClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         System.out.println("❌ Disconnected: " + reason);
+        System.exit(0);
     }
 
     @Override
@@ -57,9 +56,13 @@ public class ChatClient extends WebSocketClient {
             .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        String responseBody;
-        if (response.statusCode() == 401) {
-            System.out.println("⚠️ User not found. Registering a new account...");
+        String responseBody = response.body();
+
+        JSONObject json = new JSONObject(responseBody);
+
+        if (response.statusCode() == 404) {
+            System.out.println("⚠️ Username does not exist! Registering a new account...");
+
             request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8080/auth/register"))
                 .header("Content-Type", "application/json")
@@ -67,19 +70,20 @@ public class ChatClient extends WebSocketClient {
                 .build();
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             responseBody = response.body();
+            json = new JSONObject(responseBody);
+
             System.out.println("✅ User registered successfully!");
-        } else {
-            responseBody = response.body();
-            System.out.println("✅ Login successful!");
-        }
-        String token = null;
-        JSONObject json = new JSONObject(responseBody); 
-        if (json.has("token")) {
-            token = json.getString("token");
-        } else {
-            System.out.println("❌ No token received! Exiting...");
+        } else if (response.statusCode() == 401) {
+            System.out.println("❌ Incorrect password!");
+            return;
+        } else if (response.statusCode() != 200) {
+            System.out.println("❌ Unexpected error: " + json.optString("error", "Unknown error"));
             return;
         }
+
+        String token = json.getString("token");
+        System.out.println("✅ Login successful!");
+
         ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat"), token, username);
         client.connectBlocking();
 
