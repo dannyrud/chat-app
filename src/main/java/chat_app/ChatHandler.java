@@ -34,7 +34,7 @@ public class ChatHandler extends TextWebSocketHandler {
 
         userMap.put(session, username);
         sessions.add(session);
-        broadcast("🔵 " + username + " joined the chat!");
+        broadcast("🔵 " + username + ": joined the chat!");
     }
 
     @Override
@@ -50,14 +50,26 @@ public class ChatHandler extends TextWebSocketHandler {
         String username = userMap.remove(session);
         sessions.remove(session);
         if (username != null) {
-            broadcast("🔴 " + username + " left the chat.");
+            broadcast("🔴 " + username + ": left the chat.");
         }
     }
 
     private void broadcast(String message) {
+        int firstSpaceIndex = message.indexOf(" ");
+        int colonIndex = message.indexOf(":");
+
+        String emoji = message.substring(0, firstSpaceIndex).trim();
+        String username = message.substring(firstSpaceIndex + 1, colonIndex).trim();
+        String cleanMessage = message.substring(colonIndex + 2).trim();
+
         for (WebSocketSession session : sessions) {
             try {
-                session.sendMessage(new TextMessage(message));
+                if(username.equals(userMap.get(session))) {
+                    String newMessage = emoji + " You: " + cleanMessage;
+                    session.sendMessage(new TextMessage(newMessage));
+                } else {
+                    session.sendMessage(new TextMessage(message));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
