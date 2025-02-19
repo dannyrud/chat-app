@@ -93,8 +93,16 @@ public class ChatClient extends WebSocketClient {
 
         ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat?room=" + URLEncoder.encode(chatRoom, StandardCharsets.UTF_8)), token, username);
 
-        client.connectBlocking();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                client.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }));
 
+        client.connectBlocking();
+        
         while (true) {
             String message = scanner.nextLine();
             if (message.equalsIgnoreCase("/exit")) {
