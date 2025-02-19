@@ -58,7 +58,7 @@ public class ChatHandler extends TextWebSocketHandler {
         String username = userMap.get(session);
         String chatRoom = roomMap.get(session);
         sessions.remove(session);
-        if (username != null && chatRoom != null) {
+        if (username != null) {
             broadcast("🔴 " + username + ": left chat room " + chatRoom, session);
         }
         userMap.remove(session);
