@@ -48,9 +48,7 @@ public class ChatHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         String username = userMap.get(session);
-        if (username != null) {
-            broadcast("💬 " + username + ": " + message.getPayload(), session);
-        }
+        broadcast("💬 " + username + ": " + message.getPayload(), session);
     }
 
     @Override
@@ -58,9 +56,7 @@ public class ChatHandler extends TextWebSocketHandler {
         String username = userMap.get(session);
         String chatRoom = roomMap.get(session);
         sessions.remove(session);
-        if (username != null) {
-            broadcast("🔴 " + username + ": left chat room " + chatRoom, session);
-        }
+        broadcast("🔴 " + username + ": left chat room " + chatRoom, session);
         userMap.remove(session);
         roomMap.remove(session);
     }

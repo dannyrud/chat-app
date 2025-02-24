@@ -91,7 +91,8 @@ public class ChatClient extends WebSocketClient {
         String token = json.getString("token");
         System.out.println("✅ Login successful!");
 
-        ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat?room=" + URLEncoder.encode(chatRoom, StandardCharsets.UTF_8)), token, username);
+        String encodedRoom = URLEncoder.encode(chatRoom, StandardCharsets.UTF_8).replace("+", "%20");
+        ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat?room=" + encodedRoom), token, username);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
