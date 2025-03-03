@@ -56,10 +56,11 @@ public class ChatClient extends WebSocketClient {
         String chatRoom = scanner.nextLine();
 
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(new URI("http://localhost:8080/auth/login"))
+            .uri(new URI("http://chat-application-env.eba-xurvsmyq.us-east-1.elasticbeanstalk.com/auth/login"))
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"" + username + "\", \"password\":\"" + password + "\"}"))
             .build();
+
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         String responseBody = response.body();
@@ -70,11 +71,10 @@ public class ChatClient extends WebSocketClient {
             System.out.println("⚠️ Username does not exist! Registering a new account...");
 
             request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8080/auth/register"))
+                .uri(new URI("http://chat-application-env.eba-xurvsmyq.us-east-1.elasticbeanstalk.com/auth/register"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"" + username + "\", \"password\":\"" + password + "\"}"))
                 .build();
-            
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             responseBody = response.body();
             json = new JSONObject(responseBody);
@@ -92,7 +92,12 @@ public class ChatClient extends WebSocketClient {
         System.out.println("✅ Login successful!");
 
         String encodedRoom = URLEncoder.encode(chatRoom, StandardCharsets.UTF_8).replace("+", "%20");
-        ChatClient client = new ChatClient(new URI("ws://localhost:8080/chat?room=" + encodedRoom), token, username);
+        ChatClient client = new ChatClient(
+            new URI("ws://chat-application-env.eba-xurvsmyq.us-east-1.elasticbeanstalk.com/chat?room=" + encodedRoom),
+            token,
+            username
+        );
+
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
