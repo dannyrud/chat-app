@@ -3,6 +3,7 @@
 echo "Starting the Spring Boot WebSocket Server..."
 
 # Build the project
+cd chat-server
 mvn clean package
 
 # Run the server

@@ -3,6 +3,7 @@
 echo "Starting the WebSocket Chat Client..."
 
 # Ensure the project is built
+cd chat-client
 mvn clean install
 
 # Run the WebSocket client
